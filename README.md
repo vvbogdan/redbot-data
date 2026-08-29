@@ -32,12 +32,16 @@ Requirements: Docker. Nothing else is installed on the host.
    `.env` you must `docker rm -f redbot` and run the command again — `docker
    restart` keeps the old value.
 
-4. Install the RedBot palette into the mounted data directory:
+4. Install the RedBot palette into the mounted data directory. `package.json`
+   in this repo already pins the dependency, so a plain install is enough:
 
    ```bash
-   docker exec -w /data redbot npm install node-red-contrib-chatbot
+   docker exec -w /data redbot npm install
    docker restart redbot
    ```
+
+   (From scratch it would be `npm install node-red-contrib-chatbot`.) Expect npm
+   warnings about deprecated transitive packages — see Known issues.
 
 5. Open the editor at <http://localhost:1880>. If the flow is not already
    loaded, import `flows.json` (☰ → Import → select a file).
@@ -125,16 +129,6 @@ as data inside `i18n.uk`.
 - Free-text understanding on the fallback path (bonus): "скільки буде 5 плюс 7",
   "який курс долара", "калькулятор".
 
-### Why single-line calculator input
-
-The task lets the author pick the input format. Step-by-step prompting ("send
-the first number" → "the operator" → "the second number") needs intermediate
-state per chat, plus handling for leaving the dialog halfway and for `/start`
-arriving in the middle of input — a lot of edge cases for no gain here, because
-every validation requirement is covered by the single-line format anyway. The
-format is stated to the user on entering the branch and repeated with every
-error message.
-
 ## Bonus blocks
 
 ### Free text instead of buttons
@@ -175,38 +169,6 @@ Two collections in `postman/`.
    not mean the payload is usable.
 
 **`bot-flow.postman_collection.json`** — drives the bot itself, without Telegram.
-
-RedBot registers `POST /redbot/telegram` and hands the body straight to
-`chatServer.receive()`, the same entry point the Telegram connector uses:
-
-```js
-// node_modules/node-red-contrib-chatbot/lib/platforms/telegram.js
-'/redbot/telegram': function(req, res) {
-    const json = req.body;
-    if (json.message != null) { chatServer.receive(json.message); }
-    ...
-}
-```
-
-So a Telegram-shaped update posted from Postman walks the whole flow — router,
-branches, logging, Telegram Sender — and the reply is delivered to the chat as
-usual. The collection covers `/start`, a button payload, free text and invalid
-input, plus a `getMe` call that checks the token itself against the Telegram
-API.
-
-Two notes worth making:
-
-- A button press does not need a `callback_query` body. RedBot delivers it as a
-  plain message whose text is the `callback_data`, so posting that text takes
-  the identical path — and avoids `answerCallbackQuery()` being called with a
-  fabricated query id.
-- These requests assert **acceptance** (HTTP 200, `{status:"ok"}`), not
-  behaviour. The endpoint answers before the flow finishes, so the actual
-  outcome is verified in `bot.log` and in the chat. Each request carries the
-  expected log line in its test script as a comment.
-
-`botToken` is a collection variable, left empty in the committed file; set it
-locally as an environment variable.
 
 ### Network diagnostics
 
