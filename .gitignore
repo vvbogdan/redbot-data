@@ -21,3 +21,7 @@ dist-plugins/
 bot.log
 docker-log-raw.txt
 flow-step*.json
+submission/
+redbot-telegram-bot.zip
+make-submission.py
+repo-link.txt

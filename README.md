@@ -153,6 +153,10 @@ config stays serialisable; the node compiles them with `new RegExp(..., 'i')`.
 The log line shows which rule fired: `[calc:words]`, `[calc:symbols]`,
 `[rates]`, `[calc:branch]`, `[menu]` or `[none]`.
 
+`screenshots/03-bonus-free-text-and-english-locale.png` shows both bonus
+features at once: free-text input (`курс`, `скільки буде 3 +6`) answered in the
+English locale, picked up from the Telegram profile language.
+
 ### Postman collections
 
 Two collections in `postman/`.

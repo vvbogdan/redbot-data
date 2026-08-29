@@ -28,8 +28,8 @@
         "z": "8de3cea0285f159a",
         "bot": "5ffce50adfc3569c",
         "botProduction": "",
-        "x": 2250,
-        "y": 300,
+        "x": 2770,
+        "y": 480,
         "wires": [
             [
                 "caeed7691072a87d"
@@ -47,8 +47,8 @@
         ],
         "linkType": "static",
         "timeout": "30",
-        "x": 2410,
-        "y": 300,
+        "x": 2930,
+        "y": 480,
         "wires": [
             [
                 "e111d1ad0dabf6d9"
@@ -67,8 +67,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 2570,
-        "y": 360,
+        "x": 3090,
+        "y": 480,
         "wires": [
             [
                 "43c8cbee7fe1f98e"
@@ -99,8 +99,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 2770,
-        "y": 180,
+        "x": 3290,
+        "y": 380,
         "wires": [
             [
                 "1c1ba665c46826ca"
@@ -119,8 +119,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 2770,
-        "y": 250,
+        "x": 3350,
+        "y": 420,
         "wires": [
             [
                 "1c1ba665c46826ca"
@@ -139,8 +139,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 2770,
-        "y": 320,
+        "x": 3330,
+        "y": 480,
         "wires": [
             [
                 "1c1ba665c46826ca"
@@ -159,8 +159,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 2770,
-        "y": 380,
+        "x": 3370,
+        "y": 560,
         "wires": [
             [
                 "n3000000000000e1"
@@ -182,8 +182,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 3160,
-        "y": 740,
+        "x": 3600,
+        "y": 920,
         "wires": [
             [
                 "1c1ba665c46826ca"
@@ -200,8 +200,8 @@
         ],
         "linkType": "static",
         "timeout": "30",
-        "x": 3460,
-        "y": 320,
+        "x": 3980,
+        "y": 500,
         "wires": [
             [
                 "ad41a1c39444859a"
@@ -218,8 +218,8 @@
         "passThrough": false,
         "errorOutput": false,
         "outputs": 0,
-        "x": 3620,
-        "y": 320,
+        "x": 4140,
+        "y": 500,
         "wires": []
     },
     {
@@ -228,8 +228,8 @@
         "z": "8de3cea0285f159a",
         "name": "log",
         "links": [],
-        "x": 2425,
-        "y": 580,
+        "x": 2765,
+        "y": 820,
         "wires": [
             [
                 "8eb2ca56399bd668"
@@ -248,8 +248,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 2570,
-        "y": 580,
+        "x": 2910,
+        "y": 820,
         "wires": [
             [
                 "fb161f2de244b4ed"
@@ -266,8 +266,8 @@
         "name": "log return",
         "mode": "return",
         "links": [],
-        "x": 2730,
-        "y": 580,
+        "x": 3070,
+        "y": 820,
         "wires": []
     },
     {
@@ -280,8 +280,8 @@
         ],
         "linkType": "static",
         "timeout": "30",
-        "x": 2940,
-        "y": 530,
+        "x": 3460,
+        "y": 710,
         "wires": [
             [
                 "n3000000000000f1"
@@ -304,8 +304,8 @@
         "authType": "",
         "senderr": false,
         "headers": [],
-        "x": 3060,
-        "y": 580,
+        "x": 3580,
+        "y": 760,
         "wires": [
             [
                 "n30000000000010"
@@ -324,8 +324,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 3230,
-        "y": 480,
+        "x": 3810,
+        "y": 710,
         "wires": [
             [
                 "1c1ba665c46826ca"
@@ -341,8 +341,8 @@
             "n3000000000000f1"
         ],
         "uncaught": false,
-        "x": 3110,
-        "y": 660,
+        "x": 3630,
+        "y": 840,
         "wires": [
             [
                 "n30000000000010"
@@ -360,8 +360,8 @@
         "createDir": true,
         "overwriteFile": "false",
         "encoding": "none",
-        "x": 2720,
-        "y": 700,
+        "x": 3060,
+        "y": 940,
         "wires": [
             []
         ]
@@ -375,11 +375,11 @@
         "outputs": 0,
         "timeout": 0,
         "noerr": 0,
-        "initialize": "// Single source of truth for constants and user-facing strings.\n// Runs on the On Start tab, before the first message reaches the flow.\n// Data only, no functions: flow context may be moved to a persistent\n// store, and a function would not survive serialisation.\n\nflow.set('cfg', {\n    defaultLang: 'uk',\n\n    calc: {\n        maxLen: 50,          // max expression length\n        precision: 1e10      // result rounding\n    },\n\n    nbu: {\n        url: 'https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json',\n        timeoutMs: 5000,     // set to 1 to reproduce an external service failure\n        currencies: ['USD', 'EUR']\n    },\n\n    // button callback_data values; Telegram caps these at 64 bytes\n    action: {\n        main:  'menu:main',\n        calc:  'menu:calc',\n        rates: 'menu:rates',\n        about: 'menu:about'\n    },\n\n    command: {\n        start: '/start',\n        menu:  '/menu'\n    },\n\n    // Free-text recognition. Stored as strings, not RegExp objects, so the\n    // config stays serialisable; the intent node compiles them with new RegExp.\n    intent: {\n        rates: 'курс|валют|долар|євро|гривн|dollar|euro|rate|exchange|usd|eur',\n        ops: [\n            { re: 'плюс|додати|прибав|plus|add',                op: '+' },\n            { re: 'мінус|відняти|minus|subtract|less',          op: '-' },\n            { re: 'помнож|множ|разів|рази|times|multipl',       op: '*' },\n            { re: 'поділ|розділ|ділен|ділит|divid|over',        op: '/' }\n        ]\n    }\n});\n\n// {name} placeholders are substituted by the fmt() helper in the nodes.\nflow.set('i18n', {\n    uk: {\n        btn_calc:  '🧮 Калькулятор',\n        btn_rates: '💱 Курс валют',\n        btn_about: 'ℹ️ Про бота',\n        btn_back:  '⬅️ Назад',\n\n        menu_title: 'Головне меню. Обери пункт:',\n\n        about: 'ℹ️ Тестовий бот на RedBot (Node-RED).\\nУміє: калькулятор і курс валют НБУ.\\n/menu — головне меню в будь-який момент.',\n\n        calc_title:      '🧮 Калькулятор.',\n        calc_hint:       'Надішли вираз одним рядком, напр.: 12 + 7\\nДії: + − × ÷ (можна * і /)',\n        calc_empty:      'Порожнє повідомлення.',\n        calc_too_long:   'Задовгий вираз ({len} символів, максимум {max}).',\n        calc_no_operator:'Не бачу дії у виразі «{expr}».',\n        calc_not_number: '«{bad}» — не число.',\n        calc_one_op:     'Рахую лише одну дію за раз.',\n        calc_div_zero:   'На нуль ділити не можна.',\n        calc_overflow:   'Результат виходить за межі чисел, які я вмію рахувати.',\n        calc_result:     '🧮 {a} {op} {b} = {r}\\n\\nЩе вираз? Надішли наступний.',\n\n        rates_ok:    '💱 Курс НБУ на {date}\\n\\n🇺🇸 USD — {usd} ₴\\n🇪🇺 EUR — {eur} ₴',\n        rates_error: 'Не вдалося отримати курс, спробуйте пізніше.',\n\n        fallback: 'Не зрозумів «{got}».\\nОбери пункт нижче або надішли /menu.'\n    },\n\n    en: {\n        btn_calc:  '🧮 Calculator',\n        btn_rates: '💱 Exchange rates',\n        btn_about: 'ℹ️ About',\n        btn_back:  '⬅️ Back',\n\n        menu_title: 'Main menu. Pick an option:',\n\n        about: 'ℹ️ Test bot built on RedBot (Node-RED).\\nDoes: a calculator and NBU exchange rates.\\n/menu returns here at any time.',\n\n        calc_title:      '🧮 Calculator.',\n        calc_hint:       'Send an expression on one line, e.g.: 12 + 7\\nOperators: + − × ÷ (also * and /)',\n        calc_empty:      'Empty message.',\n        calc_too_long:   'Expression too long ({len} characters, limit {max}).',\n        calc_no_operator:'No operator found in \"{expr}\".',\n        calc_not_number: '\"{bad}\" is not a number.',\n        calc_one_op:     'I can only compute one operation at a time.',\n        calc_div_zero:   'Division by zero is not allowed.',\n        calc_overflow:   'The result is outside the range I can compute.',\n        calc_result:     '🧮 {a} {op} {b} = {r}\\n\\nAnother one? Just send it.',\n\n        rates_ok:    '💱 NBU rates for {date}\\n\\n🇺🇸 USD — {usd} UAH\\n🇪🇺 EUR — {eur} UAH',\n        rates_error: 'Could not fetch the rates, please try again later.',\n\n        fallback: 'I did not understand \"{got}\".\\nPick an option below or send /menu.'\n    }\n});\n\nnode.log(JSON.stringify({\n    ts: new Date().toISOString(), chatId: null,\n    step: 'config:loaded',\n    detail: 'langs=' + Object.keys(flow.get('i18n')).join(',')\n}));\n",
+        "initialize": "// Single source of truth for constants and user-facing strings.\n// Runs on the On Start tab, before the first message reaches the flow.\n// Data only, no functions: flow context may be moved to a persistent\n// store, and a function would not survive serialisation.\n\nflow.set('cfg', {\n    defaultLang: 'uk',\n\n    calc: {\n        maxLen: 50,          // max expression length\n        precision: 1e10      // result rounding\n    },\n\n    nbu: {\n        url: 'https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json',\n        timeoutMs: 5000,     // set to 1 to reproduce an external service failure\n        currencies: ['USD', 'EUR']\n    },\n\n    // button callback_data values; Telegram caps these at 64 bytes\n    action: {\n        main:  'menu:main',\n        calc:  'menu:calc',\n        rates: 'menu:rates',\n        about: 'menu:about'\n    },\n\n    command: {\n        start: '/start',\n        menu:  '/menu'\n    },\n\n    // Free-text recognition. Stored as strings, not RegExp objects, so the\n    // config stays serialisable; the intent node compiles them with new RegExp.\n    intent: {\n        rates: 'курс|валют|долар|євро|гривн|dollar|euro|rate|exchange|usd|eur',\n        calc:  'калькул|порахуй|порахува|обчисл|полічи|calculator|calculate',\n        menu:  'меню|назад|початок|menu|back|start',\n        ops: [\n            { re: 'плюс|додати|прибав|plus|add',                op: '+' },\n            { re: 'мінус|відняти|minus|subtract|less',          op: '-' },\n            { re: 'помнож|множ|разів|рази|times|multipl',       op: '*' },\n            { re: 'поділ|розділ|ділен|ділит|divid|over',        op: '/' }\n        ]\n    }\n});\n\n// {name} placeholders are substituted by the fmt() helper in the nodes.\nflow.set('i18n', {\n    uk: {\n        btn_calc:  '🧮 Калькулятор',\n        btn_rates: '💱 Курс валют',\n        btn_about: 'ℹ️ Про бота',\n        btn_back:  '⬅️ Назад',\n\n        menu_title: 'Головне меню. Обери пункт:',\n\n        about: 'ℹ️ Тестовий бот на RedBot (Node-RED).\\nУміє: калькулятор і курс валют НБУ.\\n/menu — головне меню в будь-який момент.',\n\n        calc_title:      '🧮 Калькулятор.',\n        calc_hint:       'Надішли вираз одним рядком, напр.: 12 + 7\\nДії: + − × ÷ (можна * і /)',\n        calc_empty:      'Порожнє повідомлення.',\n        calc_too_long:   'Задовгий вираз ({len} символів, максимум {max}).',\n        calc_no_operator:'Не бачу дії у виразі «{expr}».',\n        calc_not_number: '«{bad}» — не число.',\n        calc_one_op:     'Рахую лише одну дію за раз.',\n        calc_div_zero:   'На нуль ділити не можна.',\n        calc_overflow:   'Результат виходить за межі чисел, які я вмію рахувати.',\n        calc_result:     '🧮 {a} {op} {b} = {r}\\n\\nЩе вираз? Надішли наступний.',\n\n        rates_ok:    '💱 Курс НБУ на {date}\\n\\n🇺🇸 USD — {usd} ₴\\n🇪🇺 EUR — {eur} ₴',\n        rates_error: 'Не вдалося отримати курс, спробуйте пізніше.',\n\n        fallback: 'Не зрозумів «{got}».\\nОбери пункт нижче або надішли /menu.'\n    },\n\n    en: {\n        btn_calc:  '🧮 Calculator',\n        btn_rates: '💱 Exchange rates',\n        btn_about: 'ℹ️ About',\n        btn_back:  '⬅️ Back',\n\n        menu_title: 'Main menu. Pick an option:',\n\n        about: 'ℹ️ Test bot built on RedBot (Node-RED).\\nDoes: a calculator and NBU exchange rates.\\n/menu returns here at any time.',\n\n        calc_title:      '🧮 Calculator.',\n        calc_hint:       'Send an expression on one line, e.g.: 12 + 7\\nOperators: + − × ÷ (also * and /)',\n        calc_empty:      'Empty message.',\n        calc_too_long:   'Expression too long ({len} characters, limit {max}).',\n        calc_no_operator:'No operator found in \"{expr}\".',\n        calc_not_number: '\"{bad}\" is not a number.',\n        calc_one_op:     'I can only compute one operation at a time.',\n        calc_div_zero:   'Division by zero is not allowed.',\n        calc_overflow:   'The result is outside the range I can compute.',\n        calc_result:     '🧮 {a} {op} {b} = {r}\\n\\nAnother one? Just send it.',\n\n        rates_ok:    '💱 NBU rates for {date}\\n\\n🇺🇸 USD — {usd} UAH\\n🇪🇺 EUR — {eur} UAH',\n        rates_error: 'Could not fetch the rates, please try again later.',\n\n        fallback: 'I did not understand \"{got}\".\\nPick an option below or send /menu.'\n    }\n});\n\nnode.log(JSON.stringify({\n    ts: new Date().toISOString(), chatId: null,\n    step: 'config:loaded',\n    detail: 'langs=' + Object.keys(flow.get('i18n')).join(',')\n}));\n",
         "finalize": "",
         "libs": [],
-        "x": 2370,
-        "y": 160,
+        "x": 2930,
+        "y": 280,
         "wires": []
     },
     {
@@ -387,15 +387,15 @@
         "type": "function",
         "z": "8de3cea0285f159a",
         "name": "intent",
-        "func": "// Free-text recognition, sitting on the fallback path only: exact commands and\n// button payloads are already handled by the router, so this can never hijack\n// an unambiguous input. Recognised text is rewritten into the canonical form\n// the existing branches already accept - no branch needs to know about NLU.\n//\n// Outputs: 0=calc 1=rates 2=fallback\n\nconst cfg = flow.get('cfg');\nconst text = (msg.payload.content || '').toString();\n\nconst route = (i, matched, content) => {\n    if (content !== undefined) { msg.payload.content = content; }\n    msg.intentMatched = matched;      // shown by the log node, then dropped\n    const o = [null, null, null];\n    o[i] = msg;\n    return o;\n};\n\n// 1. Arithmetic already written with symbols, possibly wrapped in words:\n//    \"скільки буде 5+7\" -> \"5+7\"\nconst direct = text.match(/(-?\\d+(?:[.,]\\d+)?)\\s*([+\\-*\\/×÷])\\s*(-?\\d+(?:[.,]\\d+)?)/);\nif (direct !== null) {\n    return route(0, 'calc:symbols', direct[0]);\n}\n\n// 2. Arithmetic spelled out in words: \"скільки буде 5 плюс 7\" -> \"5 + 7\"\nconst worded = text.match(/(-?\\d+(?:[.,]\\d+)?)\\s+([^\\d\\s]+(?:\\s+[^\\d\\s]+)?)\\s+(-?\\d+(?:[.,]\\d+)?)/);\nif (worded !== null) {\n    for (const entry of cfg.intent.ops) {\n        if (new RegExp(entry.re, 'i').test(worded[2])) {\n            return route(0, 'calc:words', worded[1] + ' ' + entry.op + ' ' + worded[3]);\n        }\n    }\n}\n\n// 3. Currency question: \"який курс долара\"\nif (new RegExp(cfg.intent.rates, 'i').test(text)) {\n    return route(1, 'rates');\n}\n\n// 4. Nothing recognised - the normal fallback answer\nreturn route(2, 'none');\n",
-        "outputs": 3,
+        "func": "// Free-text recognition, sitting on the fallback path only: exact commands and\n// button payloads are already handled by the router, so this can never hijack\n// an unambiguous input. Recognised text is rewritten into the canonical form\n// the existing branches already accept - no branch needs to know about NLU.\n//\n// Outputs: 0=calc 1=rates 2=fallback 3=menu\n\nconst cfg = flow.get('cfg');\nconst chat = msg.chat();\nconst text = (msg.payload.content || '').toString();\n\nconst route = (i, matched, content) => {\n    if (content !== undefined) { msg.payload.content = content; }\n    msg.intentMatched = matched;      // shown by the log node, then dropped\n    const o = [null, null, null, null];\n    o[i] = msg;\n    return o;\n};\n\n// 1. Arithmetic already written with symbols, possibly wrapped in words:\n//    \"скільки буде 5+7\" -> \"5+7\"\nconst direct = text.match(/(-?\\d+(?:[.,]\\d+)?)\\s*([+\\-*\\/×÷])\\s*(-?\\d+(?:[.,]\\d+)?)/);\nif (direct !== null) {\n    return route(0, 'calc:symbols', direct[0]);\n}\n\n// 2. Arithmetic spelled out in words: \"скільки буде 5 плюс 7\" -> \"5 + 7\"\nconst worded = text.match(/(-?\\d+(?:[.,]\\d+)?)\\s+([^\\d\\s]+(?:\\s+[^\\d\\s]+)?)\\s+(-?\\d+(?:[.,]\\d+)?)/);\nif (worded !== null) {\n    for (const entry of cfg.intent.ops) {\n        if (new RegExp(entry.re, 'i').test(worded[2])) {\n            return route(0, 'calc:words', worded[1] + ' ' + entry.op + ' ' + worded[3]);\n        }\n    }\n}\n\n// 3. Currency question: \"який курс долара\"\nif (new RegExp(cfg.intent.rates, 'i').test(text)) {\n    return route(1, 'rates');\n}\n\n// 4. Branch named in words: \"калькулятор\". Set the mode too, so the next bare\n//    expression is treated as calculator input, exactly as after a button tap.\nif (new RegExp(cfg.intent.calc, 'i').test(text)) {\n    await Promise.resolve(chat.set('mode', 'calc'));\n    return route(0, 'calc:branch', cfg.action.calc);\n}\n\n// 5. \"меню\", \"назад\" - back to the top\nif (new RegExp(cfg.intent.menu, 'i').test(text)) {\n    await Promise.resolve(chat.set('mode', 'idle'));\n    return route(3, 'menu');\n}\n\n// 6. Nothing recognised - the normal fallback answer\nreturn route(2, 'none');\n",
+        "outputs": 4,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 2930,
-        "y": 720,
+        "x": 3270,
+        "y": 880,
         "wires": [
             [
                 "e18657e7df611136"
@@ -405,6 +405,9 @@
             ],
             [
                 "24c537d37775ae5c"
+            ],
+            [
+                "43c8cbee7fe1f98e"
             ]
         ]
     }
