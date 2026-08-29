@@ -178,24 +178,6 @@ Two collections in `postman/`.
 
 See [`network.md`](network.md).
 
-## Known issues / not done
-
-- The `status=...` error path (where the `http request` node forwards a network
-  error itself) is implemented but was not verified empirically; only the
-  invalid-URL path was reproduced. To test: set `TIMEOUT_MS = 1` in the `rates`
-  node.
-- Empty input cannot actually be produced from a Telegram client — the branch
-  exists but is unreachable in practice.
-- Chat context provider is `memory`, so the `mode` variable is lost on restart.
-  A user who was inside the calculator branch lands in `idle` after a restart.
-- `npm install node-red-contrib-chatbot` reports 39 vulnerabilities in the
-  transitive dependency tree (RedBot 2.0.4 pulls in Apollo Server 2, Sequelize 5,
-  express 2.x). Acceptable for a test assignment, not for production.
-- Long polling only; no webhook mode.
-
-<!-- TODO: anything else you got stuck on, and what you tried -->
-
-
 ## Time spent
 
 About 2 hours, including deployment, one refactoring pass (constants and strings
