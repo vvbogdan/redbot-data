@@ -159,9 +159,11 @@ config stays serialisable; the node compiles them with `new RegExp(..., 'i')`.
 The log line shows which rule fired: `[calc:words]`, `[calc:symbols]`,
 `[rates]`, `[calc:branch]`, `[menu]` or `[none]`.
 
-### Postman collection
+### Postman collections
 
-`postman/nbu-api.postman_collection.json` — three requests with tests:
+Two collections in `postman/`.
+
+**`nbu-api.postman_collection.json`** — three requests with tests:
 
 1. the exact call the bot makes, asserting the array shape, USD/EUR presence
    and a positive rate;
@@ -171,6 +173,40 @@ The log line shows which rule fired: `[calc:words]`, `[calc:symbols]`,
    empty array** rather than an error status. This is the direct justification
    for the `Array.isArray` and `missing_currency` checks in the flow: a 200 does
    not mean the payload is usable.
+
+**`bot-flow.postman_collection.json`** — drives the bot itself, without Telegram.
+
+RedBot registers `POST /redbot/telegram` and hands the body straight to
+`chatServer.receive()`, the same entry point the Telegram connector uses:
+
+```js
+// node_modules/node-red-contrib-chatbot/lib/platforms/telegram.js
+'/redbot/telegram': function(req, res) {
+    const json = req.body;
+    if (json.message != null) { chatServer.receive(json.message); }
+    ...
+}
+```
+
+So a Telegram-shaped update posted from Postman walks the whole flow — router,
+branches, logging, Telegram Sender — and the reply is delivered to the chat as
+usual. The collection covers `/start`, a button payload, free text and invalid
+input, plus a `getMe` call that checks the token itself against the Telegram
+API.
+
+Two notes worth making:
+
+- A button press does not need a `callback_query` body. RedBot delivers it as a
+  plain message whose text is the `callback_data`, so posting that text takes
+  the identical path — and avoids `answerCallbackQuery()` being called with a
+  fabricated query id.
+- These requests assert **acceptance** (HTTP 200, `{status:"ok"}`), not
+  behaviour. The endpoint answers before the flow finishes, so the actual
+  outcome is verified in `bot.log` and in the chat. Each request carries the
+  expected log line in its test script as a comment.
+
+`botToken` is a collection variable, left empty in the committed file; set it
+locally as an environment variable.
 
 ### Network diagnostics
 
@@ -218,7 +254,7 @@ number" reply for expressions with more than one operation.
 | Logs: invalid input | ✅ |
 | Logs: API failure | ✅ |
 | README in English | ✅ |
-| Bonus: Postman collection | ✅ |
+| Bonus: Postman collections (NBU API + bot flow) | ✅ |
 | Bonus: free text instead of buttons | ✅ |
 | Bonus: network diagnostics | 🟡 |
 

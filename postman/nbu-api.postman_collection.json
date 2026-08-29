@@ -1,0 +1,109 @@
+{
+  "info": {
+    "name": "NBU exchange rates",
+    "description": "Requests used while building the currency branch of the bot. Open API, no auth.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "https://bank.gov.ua/NBUStatService/v1/statdirectory" }
+  ],
+  "item": [
+    {
+      "name": "All rates (what the bot calls)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/exchange?json",
+          "host": ["{{baseUrl}}"],
+          "path": ["exchange"],
+          "query": [{ "key": "json", "value": null }]
+        },
+        "description": "The exact request the rates branch makes. Returns the full list for the current banking day."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('body is an array', () => pm.expect(body).to.be.an('array'));",
+              "const usd = body.find(r => r.cc === 'USD');",
+              "const eur = body.find(r => r.cc === 'EUR');",
+              "pm.test('USD and EUR are present', () => {",
+              "    pm.expect(usd, 'USD').to.not.be.undefined;",
+              "    pm.expect(eur, 'EUR').to.not.be.undefined;",
+              "});",
+              "pm.test('rate is a positive number', () => pm.expect(Number(usd.rate)).to.be.above(0));",
+              "console.log('USD', usd.rate, 'EUR', eur.rate, 'date', usd.exchangedate);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Single currency by code",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/exchange?valcode=usd&json",
+          "host": ["{{baseUrl}}"],
+          "path": ["exchange"],
+          "query": [
+            { "key": "valcode", "value": "usd" },
+            { "key": "json", "value": null }
+          ]
+        },
+        "description": "Narrower response. The bot does not use it: one request for the whole list is cheaper than one request per currency."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('exactly one row', () => pm.expect(body).to.have.lengthOf(1));",
+              "pm.test('it is USD', () => pm.expect(body[0].cc).to.eql('USD'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Unknown currency code (error shape)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/exchange?valcode=xxx&json",
+          "host": ["{{baseUrl}}"],
+          "path": ["exchange"],
+          "query": [
+            { "key": "valcode", "value": "xxx" },
+            { "key": "json", "value": null }
+          ]
+        },
+        "description": "Shows how the API reports an unknown code: HTTP 200 with an empty array, not an error status. This is why the bot checks the body shape and the presence of USD/EUR instead of trusting the status code alone."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('still 200, not an error status', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('empty array', () => pm.expect(body).to.be.an('array').that.is.empty);",
+              "// The bot relies on this: a 200 does not mean the data is usable."
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

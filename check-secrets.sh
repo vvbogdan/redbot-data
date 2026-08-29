@@ -4,7 +4,7 @@
 set -u
 
 TOKEN_RE='[0-9]{8,12}:[A-Za-z0-9_-]{30,}'
-FILES="flows.json README.md logs.md"
+FILES="flows.json README.md logs.md network.md postman/nbu-api.postman_collection.json postman/bot-flow.postman_collection.json"
 fail=0
 
 for f in $FILES; do

@@ -1,0 +1,98 @@
+{
+  "info": {
+    "name": "Bot flow (inject without Telegram)",
+    "description": "RedBot registers POST /redbot/telegram, which feeds a Telegram-shaped update straight into the flow (see lib/platforms/telegram.js -> routes). The flow processes it exactly as if it came from Telegram, so the whole dialog can be driven from Postman: no phone, no typing, repeatable.\n\nSet the chatId variable to a chat that has already pressed Start on the bot — the reply is delivered through Telegram as usual.\n\nWhat these requests assert: that the update was accepted (HTTP 200, {status:'ok'}). The behaviour itself is verified in bot.log and in the Telegram chat — the endpoint answers before the flow finishes, so it cannot return the bot's reply.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:1880" },
+    { "key": "chatId", "value": "0", "description": "Telegram chat id that has started the bot" },
+    { "key": "botToken", "value": "", "description": "Only needed for the Telegram API request. Leave empty in the committed file." }
+  ],
+  "item": [
+    {
+      "name": "/start -> main menu",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{baseUrl}}/redbot/telegram", "host": ["{{baseUrl}}"], "path": ["redbot", "telegram"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": {\n    \"message_id\": 900001,\n    \"date\": 1756460000,\n    \"chat\": { \"id\": {{chatId}}, \"type\": \"private\" },\n    \"from\": { \"id\": {{chatId}}, \"is_bot\": false, \"first_name\": \"Postman\", \"language_code\": \"uk\" },\n    \"text\": \"/start\"\n  }\n}"
+        }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('accepted', () => pm.response.to.have.status(200));",
+        "pm.test('status ok', () => pm.expect(pm.response.json().status).to.eql('ok'));",
+        "// Expected in bot.log: msg:received /start -> menu:shown"
+      ]}}]
+    },
+    {
+      "name": "Button payload -> rates branch",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{baseUrl}}/redbot/telegram", "host": ["{{baseUrl}}"], "path": ["redbot", "telegram"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": {\n    \"message_id\": 900002,\n    \"date\": 1756460000,\n    \"chat\": { \"id\": {{chatId}}, \"type\": \"private\" },\n    \"from\": { \"id\": {{chatId}}, \"is_bot\": false, \"first_name\": \"Postman\", \"language_code\": \"uk\" },\n    \"text\": \"menu:rates\"\n  }\n}"
+        },
+        "description": "An inline button press is delivered by RedBot as a plain message whose text is the button's callback_data, so sending that text exercises the identical path. Simulating a raw callback_query object is possible but pointless here: the connector would try to answerCallbackQuery() against a fake query id."
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('accepted', () => pm.response.to.have.status(200));",
+        "// Expected in bot.log: nbu:request_sent -> nbu:success"
+      ]}}]
+    },
+    {
+      "name": "Free text -> calculator",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{baseUrl}}/redbot/telegram", "host": ["{{baseUrl}}"], "path": ["redbot", "telegram"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": {\n    \"message_id\": 900003,\n    \"date\": 1756460000,\n    \"chat\": { \"id\": {{chatId}}, \"type\": \"private\" },\n    \"from\": { \"id\": {{chatId}}, \"is_bot\": false, \"first_name\": \"Postman\", \"language_code\": \"uk\" },\n    \"text\": \"скільки буде 5 плюс 7\"\n  }\n}"
+        }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('accepted', () => pm.response.to.have.status(200));",
+        "// Expected in bot.log: calc:success with detail [calc:words] 5+7=12"
+      ]}}]
+    },
+    {
+      "name": "Invalid input -> validation",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{baseUrl}}/redbot/telegram", "host": ["{{baseUrl}}"], "path": ["redbot", "telegram"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": {\n    \"message_id\": 900004,\n    \"date\": 1756460000,\n    \"chat\": { \"id\": {{chatId}}, \"type\": \"private\" },\n    \"from\": { \"id\": {{chatId}}, \"is_bot\": false, \"first_name\": \"Postman\", \"language_code\": \"uk\" },\n    \"text\": \"abc + 1\"\n  }\n}"
+        }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('accepted', () => pm.response.to.have.status(200));",
+        "// Expected in bot.log: calc:invalid_number with detail bad=abc"
+      ]}}]
+    },
+    {
+      "name": "Telegram API: getMe (token check)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "https://api.telegram.org/bot{{botToken}}/getMe", "protocol": "https", "host": ["api", "telegram", "org"], "path": ["bot{{botToken}}", "getMe"] },
+        "description": "Verifies that the token itself is valid, independently of Node-RED. Set botToken as an environment variable locally; it is intentionally empty in the committed collection."
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('token is set', () => pm.expect(pm.variables.get('botToken')).to.not.be.empty);",
+        "pm.test('status is 200', () => pm.response.to.have.status(200));",
+        "pm.test('ok:true and is_bot', () => {",
+        "    const b = pm.response.json();",
+        "    pm.expect(b.ok).to.be.true;",
+        "    pm.expect(b.result.is_bot).to.be.true;",
+        "});"
+      ]}}]
+    }
+  ]
+}
