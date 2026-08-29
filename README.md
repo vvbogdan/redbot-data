@@ -71,7 +71,8 @@ Telegram Receiver
       ├── rates ─0─────┼─ [log] → [http request: NBU] → rates format ──┐
       │         └─1────┼──────────────────────────────────────────────►│
       │                │           [catch: NBU] ───────────────────────►│
-      └── fallback   ──┤                                                │
+      └── intent ────┬─┤   free text → calc / rates / menu / fallback   │
+                     └─┤                                                │
                        └──────────────► [link call: log] → Telegram Sender
 ```
 
@@ -121,6 +122,8 @@ as data inside `i18n.uk`.
   `/data/bot.log`.
 - All constants and user-facing strings centralised in one `config` node,
   with `uk` / `en` string dictionaries.
+- Free-text understanding on the fallback path (bonus): "скільки буде 5 плюс 7",
+  "який курс долара", "калькулятор".
 
 ### Why single-line calculator input
 
@@ -131,6 +134,47 @@ arriving in the middle of input — a lot of edge cases for no gain here, becaus
 every validation requirement is covered by the single-line format anyway. The
 format is stated to the user on entering the branch and repeated with every
 error message.
+
+## Bonus blocks
+
+### Free text instead of buttons
+
+The `intent` node sits **on the fallback path only**, so exact commands and
+button payloads are still resolved by the router and free-text matching can
+never hijack an unambiguous input. Recognised text is rewritten into the
+canonical form the existing branches already accept:
+
+```
+"скільки буде 5 плюс 7"  ->  msg.payload.content = "5 + 7"  ->  calc branch
+"який курс долара"       ->  rates branch
+"калькулятор"            ->  calc branch, chat mode set to `calc`
+```
+
+Neither the calculator nor the rates branch knows that free-text recognition
+exists. Replacing the regex layer with a real NLU engine would touch one node
+and nothing else.
+
+Patterns live in `cfg.intent` as **strings**, not `RegExp` objects, so the
+config stays serialisable; the node compiles them with `new RegExp(..., 'i')`.
+The log line shows which rule fired: `[calc:words]`, `[calc:symbols]`,
+`[rates]`, `[calc:branch]`, `[menu]` or `[none]`.
+
+### Postman collection
+
+`postman/nbu-api.postman_collection.json` — three requests with tests:
+
+1. the exact call the bot makes, asserting the array shape, USD/EUR presence
+   and a positive rate;
+2. a single-currency request (`?valcode=usd`), with a note on why the bot does
+   not use it — one request for the whole list is cheaper than one per currency;
+3. an unknown currency code, which the NBU API answers with **HTTP 200 and an
+   empty array** rather than an error status. This is the direct justification
+   for the `Array.isArray` and `missing_currency` checks in the flow: a 200 does
+   not mean the payload is usable.
+
+### Network diagnostics
+
+See [`network.md`](network.md).
 
 ## Known issues / not done
 
@@ -146,7 +190,6 @@ error message.
   transitive dependency tree (RedBot 2.0.4 pulls in Apollo Server 2, Sequelize 5,
   express 2.x). Acceptable for a test assignment, not for production.
 - Long polling only; no webhook mode.
-- Bonus blocks (Postman collection, free-text NLP, network diagnostics) not done.
 
 <!-- TODO: anything else you got stuck on, and what you tried -->
 
@@ -175,5 +218,8 @@ number" reply for expressions with more than one operation.
 | Logs: invalid input | ✅ |
 | Logs: API failure | ✅ |
 | README in English | ✅ |
+| Bonus: Postman collection | ✅ |
+| Bonus: free text instead of buttons | ✅ |
+| Bonus: network diagnostics | 🟡 |
 
 Evidence for every logging row is in [`logs.md`](logs.md).

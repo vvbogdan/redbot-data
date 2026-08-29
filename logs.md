@@ -165,3 +165,29 @@ This case was found by testing the refactored flow: the parser handles one
 operation, and the earlier version reported `1/2` as "not a number", which was
 misleading. Operands are now validated by shape, so "not a number" and "more
 than one operation" are two different steps with two different replies.
+
+---
+
+## Bonus — free-text recognition in the log
+
+The `intent` node prefixes the log line with the rule that fired, so a free-text
+request is traceable end to end without a separate log format:
+
+```json
+{"ts":"2026-08-29T09:33:23.177Z","chatId":8631190257,"step":"msg:received","detail":"курс"}
+{"ts":"2026-08-29T09:33:23.180Z","chatId":8631190257,"step":"nbu:request_sent","detail":"[rates] https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json timeout=5000ms"}
+{"ts":"2026-08-29T09:33:23.265Z","chatId":8631190257,"step":"nbu:success","detail":"USD=44.5505 EUR=51.8804"}
+```
+
+Unrecognised free text is marked `[none]` and falls through to the normal
+fallback answer:
+
+```json
+{"ts":"2026-08-29T09:33:18.730Z","chatId":8631190257,"step":"msg:received","detail":"калькулятор"}
+{"ts":"2026-08-29T09:33:18.733Z","chatId":8631190257,"step":"fallback:unknown_input","detail":"[none] калькулятор"}
+```
+
+That second fragment is from before the branch-name patterns were added — the
+user typed the name of a menu section and got the fallback. It is kept here on
+purpose: it is what made the gap visible, and `[none]` is exactly the marker to
+watch when deciding which patterns are missing.
