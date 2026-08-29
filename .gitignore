@@ -1,0 +1,23 @@
+# secrets
+.env
+flows_cred.json
+
+# node-red runtime
+node_modules/
+package-lock.json
+.config.*.json
+.config.*.json.backup
+.sessions.json
+.npm/
+lib/
+dist-plugins/
+
+# redbot local storage
+*.sqlite
+
+# os
+.DS_Store
+.flows.json.backup
+bot.log
+docker-log-raw.txt
+flow-step*.json
