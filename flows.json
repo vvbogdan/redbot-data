@@ -1,0 +1,385 @@
+[
+    {
+        "id": "8de3cea0285f159a",
+        "type": "tab",
+        "label": "Main",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "5ffce50adfc3569c",
+        "type": "chatbot-telegram-node",
+        "botname": "novait-bot",
+        "polling": 1000,
+        "store": "",
+        "debug": false,
+        "skipMediaFiles": false,
+        "webHook": "",
+        "connectMode": "polling",
+        "storeMessages": true,
+        "enableMissionControl": false,
+        "inspectMessages": true,
+        "chatbotId": ""
+    },
+    {
+        "id": "bc232958f7180596",
+        "type": "chatbot-telegram-receive",
+        "z": "8de3cea0285f159a",
+        "bot": "5ffce50adfc3569c",
+        "botProduction": "",
+        "x": 2810,
+        "y": 180,
+        "wires": [
+            [
+                "caeed7691072a87d"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "caeed7691072a87d",
+        "type": "link call",
+        "z": "8de3cea0285f159a",
+        "name": "log in",
+        "links": [
+            "117a43f702070aa8"
+        ],
+        "linkType": "static",
+        "timeout": "30",
+        "x": 2970,
+        "y": 180,
+        "wires": [
+            [
+                "e111d1ad0dabf6d9"
+            ]
+        ]
+    },
+    {
+        "id": "e111d1ad0dabf6d9",
+        "type": "function",
+        "z": "8de3cea0285f159a",
+        "name": "router",
+        "func": "// Single routing point. In RedBot an inline button press arrives here as a\n// plain text message whose content is the button's callback_data.\n\nconst cfg = flow.get('cfg');\nconst i18n = flow.get('i18n');\nconst chat = msg.chat();\nconst type = msg.payload.type;\nconst text = (msg.payload.content || '').toString().trim();\n\n// Resolve the language once; every branch then just reads msg.lang.\nconst raw = msg.originalMessage && msg.originalMessage.from\n    ? (msg.originalMessage.from.language_code || '') : '';\nconst short = raw.slice(0, 2);\nmsg.lang = i18n[short] ? short : cfg.defaultLang;\n\n// Outputs: 0=menu 1=about 2=calc 3=rates 4=fallback\nconst OUT = { menu: 0, about: 1, calc: 2, rates: 3, fallback: 4 };\nconst route = (i) => { const o = [null, null, null, null, null]; o[i] = msg; return o; };\n\n// Non-text input (photo, sticker, location) must not go unanswered either.\nif (type !== 'message') {\n    msg.logStep = 'router:non_text';\n    return route(OUT.fallback);\n}\n\n// /start and /menu reset the dialog from anywhere.\nif (text === cfg.command.start || text === cfg.command.menu || text === cfg.action.main) {\n    await Promise.resolve(chat.set('mode', 'idle'));\n    return route(OUT.menu);\n}\n\nif (text === cfg.action.calc) {\n    await Promise.resolve(chat.set('mode', 'calc'));\n    return route(OUT.calc);\n}\nif (text === cfg.action.rates) {\n    await Promise.resolve(chat.set('mode', 'idle'));\n    return route(OUT.rates);\n}\nif (text === cfg.action.about) {\n    await Promise.resolve(chat.set('mode', 'idle'));\n    return route(OUT.about);\n}\n\n// Free text: the chat mode decides where it goes.\nconst mode = await Promise.resolve(chat.get('mode'));\nif (mode === 'calc') {\n    return route(OUT.calc);\n}\n\nreturn route(OUT.fallback);\n",
+        "outputs": 5,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 3130,
+        "y": 180,
+        "wires": [
+            [
+                "43c8cbee7fe1f98e"
+            ],
+            [
+                "beab4e6edbf23f33"
+            ],
+            [
+                "e18657e7df611136"
+            ],
+            [
+                "f0cbf01fd249567a"
+            ],
+            [
+                "24c537d37775ae5c"
+            ]
+        ]
+    },
+    {
+        "id": "43c8cbee7fe1f98e",
+        "type": "function",
+        "z": "8de3cea0285f159a",
+        "name": "menu",
+        "func": "const cfg = flow.get('cfg');\nconst i18n = flow.get('i18n');\nconst t = i18n[msg.lang] || i18n[cfg.defaultLang];\n\n// Kept in node code, not in config: flow context holds data only.\nconst fmt = (s, v) => s.replace(/\\{(\\w+)\\}/g, (_, k) => (v && v[k] != null ? v[k] : ''));\n\nconst chatId = msg.payload.chatId;   // read before payload is overwritten\n\nmsg.logStep = 'menu:shown';\nmsg.logDetail = 'main menu lang=' + msg.lang;\n\nmsg.payload = {\n    type: 'inline-buttons',\n    chatId,\n    content: t.menu_title,\n    buttons: [\n        { type: 'postback', label: t.btn_calc,  value: cfg.action.calc },\n        { type: 'newline' },\n        { type: 'postback', label: t.btn_rates, value: cfg.action.rates },\n        { type: 'newline' },\n        { type: 'postback', label: t.btn_about, value: cfg.action.about }\n    ]\n};\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 3330,
+        "y": 60,
+        "wires": [
+            [
+                "1c1ba665c46826ca"
+            ]
+        ]
+    },
+    {
+        "id": "beab4e6edbf23f33",
+        "type": "function",
+        "z": "8de3cea0285f159a",
+        "name": "about",
+        "func": "const cfg = flow.get('cfg');\nconst i18n = flow.get('i18n');\nconst t = i18n[msg.lang] || i18n[cfg.defaultLang];\n\n// Kept in node code, not in config: flow context holds data only.\nconst fmt = (s, v) => s.replace(/\\{(\\w+)\\}/g, (_, k) => (v && v[k] != null ? v[k] : ''));\n\nconst chatId = msg.payload.chatId;\n\nmsg.logStep = 'about:shown';\nmsg.logDetail = 'about screen';\n\nmsg.payload = {\n    type: 'inline-buttons',\n    chatId,\n    content: t.about,\n    buttons: [{ type: 'postback', label: t.btn_back, value: cfg.action.main }]\n};\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 3330,
+        "y": 130,
+        "wires": [
+            [
+                "1c1ba665c46826ca"
+            ]
+        ]
+    },
+    {
+        "id": "e18657e7df611136",
+        "type": "function",
+        "z": "8de3cea0285f159a",
+        "name": "calc",
+        "func": "const cfg = flow.get('cfg');\nconst i18n = flow.get('i18n');\nconst t = i18n[msg.lang] || i18n[cfg.defaultLang];\n\n// Kept in node code, not in config: flow context holds data only.\nconst fmt = (s, v) => s.replace(/\\{(\\w+)\\}/g, (_, k) => (v && v[k] != null ? v[k] : ''));\n\n// Calculator. Input format is a single line, \"12 + 7\" - a deliberate choice:\n// step-by-step prompting needs intermediate state and mid-dialog exit handling,\n// while the validation requirements are covered either way.\n\nconst chatId = msg.payload.chatId;\nconst input = (msg.payload.content || '').toString();\nconst MAX_LEN = cfg.calc.maxLen;\n\nconst BACK = [{ type: 'postback', label: t.btn_back, value: cfg.action.main }];\n\nconst reply = (text, step, detail) => {\n    msg.logStep = 'calc:' + step;\n    msg.logDetail = detail !== undefined ? detail : input.trim().slice(0, 80);\n    msg.payload = { type: 'inline-buttons', chatId, content: text, buttons: BACK };\n    return msg;\n};\n\n// Entered the branch via the button - show the input format.\nif (input.trim() === cfg.action.calc) {\n    return reply(t.calc_title + '\\n' + t.calc_hint, 'branch_entered', 'entered');\n}\n\nconst trimmed = input.trim();\nif (trimmed === '') {\n    return reply(t.calc_empty + ' ' + t.calc_hint, 'empty_input', '<empty>');\n}\n\n// Length is checked before parsing: a huge string in a backtracking regex is a ReDoS risk.\nif (trimmed.length > MAX_LEN) {\n    return reply(fmt(t.calc_too_long, { len: trimmed.length, max: MAX_LEN }) + '\\n' + t.calc_hint,\n                 'too_long', 'len=' + trimmed.length);\n}\n\n// Human symbols to machine ones.\nconst norm = trimmed\n    .replace(/×/g, '*')\n    .replace(/÷/g, '/')\n    .replace(/[−–—]/g, '-')\n    .replace(',', '.');\n\n// Lazy quantifier so that a leading minus stays with the left operand: \"-5+3\".\nconst m = norm.match(/^(.+?)\\s*([+\\-*/])\\s*(.+)$/);\nif (m === null) {\n    return reply(fmt(t.calc_no_operator, { expr: trimmed }) + '\\n' + t.calc_hint, 'no_operator');\n}\n\nconst left = m[1].trim();\nconst op = m[2];\nconst right = m[3].trim();\n\n// An operand must be a bare number. Checking the shape, not just Number(),\n// lets us tell \"not a number\" apart from \"more than one operation\".\nconst NUMBER = /^-?\\d+(?:\\.\\d+)?$/;\nconst OPERATOR = /[+\\-*/]/;\n\nconst badOperand = !NUMBER.test(left) ? left : (!NUMBER.test(right) ? right : null);\n\nif (badOperand !== null) {\n    // \"1+1/2\" used to report \"1/2 is not a number\", which is a lie.\n    if (OPERATOR.test(badOperand.slice(1))) {\n        return reply(t.calc_one_op + '\\n' + t.calc_hint, 'too_many_operations', 'expr=' + trimmed);\n    }\n    return reply(fmt(t.calc_not_number, { bad: badOperand }) + '\\n' + t.calc_hint,\n                 'invalid_number', 'bad=' + badOperand);\n}\n\n// Number('') is 0, not NaN - the shape check above already rejects an empty operand.\nconst a = Number(left);\nconst b = Number(right);\n\n// Number.isFinite does no coercion and also rejects Infinity.\nif (!Number.isFinite(a) || !Number.isFinite(b)) {\n    const bad = !Number.isFinite(a) ? left : right;\n    return reply(fmt(t.calc_not_number, { bad }) + '\\n' + t.calc_hint, 'invalid_number', 'bad=' + bad);\n}\n\nif (op === '/' && b === 0) {\n    return reply(t.calc_div_zero + '\\n' + t.calc_hint, 'division_by_zero');\n}\n\nlet result;\nswitch (op) {\n    case '+': result = a + b; break;\n    case '-': result = a - b; break;\n    case '*': result = a * b; break;\n    case '/': result = a / b; break;\n}\n\nif (!Number.isFinite(result)) {\n    return reply(t.calc_overflow + '\\n' + t.calc_hint, 'overflow');\n}\n\n// Trim float noise: 0.1 + 0.2 = 0.30000000000000004\nconst p = cfg.calc.precision;\nconst pretty = Math.round(result * p) / p;\n\nreturn reply(fmt(t.calc_result, { a, op, b, r: pretty }), 'success', a + op + b + '=' + pretty);\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 3330,
+        "y": 200,
+        "wires": [
+            [
+                "1c1ba665c46826ca"
+            ]
+        ]
+    },
+    {
+        "id": "f0cbf01fd249567a",
+        "type": "function",
+        "z": "8de3cea0285f159a",
+        "name": "rates",
+        "func": "// Exchange rates branch, request side.\n// Outputs: 0 = go to the HTTP node, 1 = straight to the error handler.\n// The second output exists because on an invalid URL the http request node\n// only emits a warn and drops the message - a warn does not trigger Catch,\n// so the user was left with no reply at all.\n\nconst cfg = flow.get('cfg');\nconst url = cfg.nbu.url;\nconst timeout = cfg.nbu.timeoutMs;\n\n// The HTTP node overwrites msg.payload with the response, so chatId has to\n// leave the payload now or it is lost.\nmsg.chatIdSaved = msg.payload.chatId;\n\nif (!/^https?:\\/\\//.test(url)) {\n    msg.error = { message: 'invalid nbu.url: ' + String(url).slice(0, 40) };\n    return [null, msg];              // no request was sent, so nothing is logged as sent\n}\n\nmsg.url = url;                       // the node's URL field is empty, so it takes msg.url\nmsg.requestTimeout = timeout;        // otherwise the global 120s limit applies\n// msg.method is not set: the method is configured on the node and msg cannot override it\n\nmsg.logStep = 'nbu:request_sent';\nmsg.logDetail = url + ' timeout=' + timeout + 'ms';\n\nreturn [msg, null];\n",
+        "outputs": 2,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 3330,
+        "y": 260,
+        "wires": [
+            [
+                "n3000000000000e1"
+            ],
+            [
+                "n30000000000010"
+            ]
+        ]
+    },
+    {
+        "id": "24c537d37775ae5c",
+        "type": "function",
+        "z": "8de3cea0285f159a",
+        "name": "fallback",
+        "func": "const cfg = flow.get('cfg');\nconst i18n = flow.get('i18n');\nconst t = i18n[msg.lang] || i18n[cfg.defaultLang];\n\n// Kept in node code, not in config: flow context holds data only.\nconst fmt = (s, v) => s.replace(/\\{(\\w+)\\}/g, (_, k) => (v && v[k] != null ? v[k] : ''));\n\n// Unrecognised input: explain, then show the menu again.\nconst chatId = msg.payload.chatId;\nconst got = (msg.payload.content || '').toString().slice(0, 40);\n\nmsg.logStep = msg.logStep || 'fallback:unknown_input';\nmsg.logDetail = got;\n\nmsg.payload = {\n    type: 'inline-buttons',\n    chatId,\n    content: fmt(t.fallback, { got }),\n    buttons: [\n        { type: 'postback', label: t.btn_calc,  value: cfg.action.calc },\n        { type: 'newline' },\n        { type: 'postback', label: t.btn_rates, value: cfg.action.rates },\n        { type: 'newline' },\n        { type: 'postback', label: t.btn_about, value: cfg.action.about }\n    ]\n};\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 3320,
+        "y": 320,
+        "wires": [
+            [
+                "1c1ba665c46826ca"
+            ]
+        ]
+    },
+    {
+        "id": "1c1ba665c46826ca",
+        "type": "link call",
+        "z": "8de3cea0285f159a",
+        "name": "log out",
+        "links": [
+            "117a43f702070aa8"
+        ],
+        "linkType": "static",
+        "timeout": "30",
+        "x": 4020,
+        "y": 200,
+        "wires": [
+            [
+                "ad41a1c39444859a"
+            ]
+        ]
+    },
+    {
+        "id": "ad41a1c39444859a",
+        "type": "chatbot-telegram-send",
+        "z": "8de3cea0285f159a",
+        "bot": "5ffce50adfc3569c",
+        "botProduction": "",
+        "track": false,
+        "passThrough": false,
+        "errorOutput": false,
+        "outputs": 0,
+        "x": 4180,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "117a43f702070aa8",
+        "type": "link in",
+        "z": "8de3cea0285f159a",
+        "name": "log",
+        "links": [],
+        "x": 2985,
+        "y": 460,
+        "wires": [
+            [
+                "8eb2ca56399bd668"
+            ]
+        ]
+    },
+    {
+        "id": "8eb2ca56399bd668",
+        "type": "function",
+        "z": "8de3cea0285f159a",
+        "name": "log",
+        "func": "// Single logging point, reached from every branch through link call.\n// Output 0 forwards the untouched msg, output 1 carries the log line to the\n// file node - the file node writes msg.payload, which we must not overwrite.\n\nconst p = msg.payload || {};\n\nconst entry = {\n    ts: new Date().toISOString(),\n    chatId: p.chatId != null ? p.chatId : (msg.chatIdSaved != null ? msg.chatIdSaved : null),\n    step: msg.logStep || 'msg:received',\n    detail: msg.logDetail != null\n        ? msg.logDetail\n        : (typeof p.content === 'string' ? p.content.slice(0, 80) : p.type)\n};\n\nconst line = JSON.stringify(entry);\n\nnode.log(line);            // container stdout -> docker logs\n\ndelete msg.logStep;        // so the next call does not repeat this one\ndelete msg.logDetail;\n\nreturn [msg, { payload: line }];\n",
+        "outputs": 2,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 3130,
+        "y": 460,
+        "wires": [
+            [
+                "fb161f2de244b4ed"
+            ],
+            [
+                "n6000000000f1"
+            ]
+        ]
+    },
+    {
+        "id": "fb161f2de244b4ed",
+        "type": "link out",
+        "z": "8de3cea0285f159a",
+        "name": "log return",
+        "mode": "return",
+        "links": [],
+        "x": 3290,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "n3000000000000e1",
+        "type": "link call",
+        "z": "8de3cea0285f159a",
+        "name": "log req",
+        "links": [
+            "117a43f702070aa8"
+        ],
+        "linkType": "static",
+        "timeout": "30",
+        "x": 3500,
+        "y": 410,
+        "wires": [
+            [
+                "n3000000000000f1"
+            ]
+        ]
+    },
+    {
+        "id": "n3000000000000f1",
+        "type": "http request",
+        "z": "8de3cea0285f159a",
+        "name": "NBU exchange",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 3620,
+        "y": 460,
+        "wires": [
+            [
+                "n30000000000010"
+            ]
+        ]
+    },
+    {
+        "id": "n30000000000010",
+        "type": "function",
+        "z": "8de3cea0285f159a",
+        "name": "rates format",
+        "func": "const cfg = flow.get('cfg');\nconst i18n = flow.get('i18n');\nconst t = i18n[msg.lang] || i18n[cfg.defaultLang];\n\n// Kept in node code, not in config: flow context holds data only.\nconst fmt = (s, v) => s.replace(/\\{(\\w+)\\}/g, (_, k) => (v && v[k] != null ? v[k] : ''));\n\n// Exchange rates branch, response side. Three ways in:\n//   1) success        - statusCode 200, payload is an array\n//   2) network error  - the HTTP node forwards msg with the code in statusCode\n//   3) exception      - the Catch node, or our own URL guard in the rates node\n\nconst chatId = msg.chatIdSaved;\nconst BACK = [{ type: 'postback', label: t.btn_back, value: cfg.action.main }];\n\nconst reply = (text, step, detail) => {\n    msg.logStep = 'nbu:' + step;\n    msg.logDetail = detail;\n    msg.payload = { type: 'inline-buttons', chatId, content: text, buttons: BACK };\n    return msg;\n};\n\nif (msg.error != null) {\n    return reply(t.rates_error, 'error', 'exception:' + (msg.error.message || 'unknown'));\n}\n\nif (msg.statusCode !== 200) {\n    return reply(t.rates_error, 'error', 'status=' + msg.statusCode);\n}\n\n// 200 but not what we expect: HTML instead of JSON, a stub, an empty body.\nconst data = msg.payload;\nif (!Array.isArray(data)) {\n    return reply(t.rates_error, 'error', 'bad_body:' + typeof data);\n}\n\nconst rows = cfg.nbu.currencies.map((cc) => data.find((row) => row.cc === cc));\nif (rows.some((row) => row == null)) {\n    return reply(t.rates_error, 'error', 'missing_currency');\n}\n\nconst num = (row) => Number(row.rate).toFixed(4);\nconst [usd, eur] = rows;\n\nreturn reply(\n    fmt(t.rates_ok, { date: usd.exchangedate, usd: num(usd), eur: num(eur) }),\n    'success',\n    'USD=' + num(usd) + ' EUR=' + num(eur)\n);\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 3850,
+        "y": 410,
+        "wires": [
+            [
+                "1c1ba665c46826ca"
+            ]
+        ]
+    },
+    {
+        "id": "n4000000000c1",
+        "type": "catch",
+        "z": "8de3cea0285f159a",
+        "name": "catch: NBU",
+        "scope": [
+            "n3000000000000f1"
+        ],
+        "uncaught": false,
+        "x": 3670,
+        "y": 540,
+        "wires": [
+            [
+                "n30000000000010"
+            ]
+        ]
+    },
+    {
+        "id": "n6000000000f1",
+        "type": "file",
+        "z": "8de3cea0285f159a",
+        "name": "bot.log",
+        "filename": "/data/bot.log",
+        "filenameType": "str",
+        "appendNewline": true,
+        "createDir": true,
+        "overwriteFile": "false",
+        "encoding": "none",
+        "x": 3280,
+        "y": 580,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "n7000000000cfg",
+        "type": "function",
+        "z": "8de3cea0285f159a",
+        "name": "config",
+        "func": "// No message handling here: all the work is on the On Start tab.\nreturn null;",
+        "outputs": 0,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "// Single source of truth for constants and user-facing strings.\n// Runs on the On Start tab, before the first message reaches the flow.\n// Data only, no functions: flow context may be moved to a persistent\n// store, and a function would not survive serialisation.\n\nflow.set('cfg', {\n    defaultLang: 'uk',\n\n    calc: {\n        maxLen: 50,          // max expression length\n        precision: 1e10      // result rounding\n    },\n\n    nbu: {\n        url: 'https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json',\n        timeoutMs: 5000,     // set to 1 to reproduce an external service failure\n        currencies: ['USD', 'EUR']\n    },\n\n    // button callback_data values; Telegram caps these at 64 bytes\n    action: {\n        main:  'menu:main',\n        calc:  'menu:calc',\n        rates: 'menu:rates',\n        about: 'menu:about'\n    },\n\n    command: {\n        start: '/start',\n        menu:  '/menu'\n    }\n});\n\n// {name} placeholders are substituted by the fmt() helper in the nodes.\nflow.set('i18n', {\n    uk: {\n        btn_calc:  '🧮 Калькулятор',\n        btn_rates: '💱 Курс валют',\n        btn_about: 'ℹ️ Про бота',\n        btn_back:  '⬅️ Назад',\n\n        menu_title: 'Головне меню. Обери пункт:',\n\n        about: 'ℹ️ Тестовий бот на RedBot (Node-RED).\\nУміє: калькулятор і курс валют НБУ.\\n/menu — головне меню в будь-який момент.',\n\n        calc_title:      '🧮 Калькулятор.',\n        calc_hint:       'Надішли вираз одним рядком, напр.: 12 + 7\\nДії: + − × ÷ (можна * і /)',\n        calc_empty:      'Порожнє повідомлення.',\n        calc_too_long:   'Задовгий вираз ({len} символів, максимум {max}).',\n        calc_no_operator:'Не бачу дії у виразі «{expr}».',\n        calc_not_number: '«{bad}» — не число.',\n        calc_one_op:     'Рахую лише одну дію за раз.',\n        calc_div_zero:   'На нуль ділити не можна.',\n        calc_overflow:   'Результат виходить за межі чисел, які я вмію рахувати.',\n        calc_result:     '🧮 {a} {op} {b} = {r}\\n\\nЩе вираз? Надішли наступний.',\n\n        rates_ok:    '💱 Курс НБУ на {date}\\n\\n🇺🇸 USD — {usd} ₴\\n🇪🇺 EUR — {eur} ₴',\n        rates_error: 'Не вдалося отримати курс, спробуйте пізніше.',\n\n        fallback: 'Не зрозумів «{got}».\\nОбери пункт нижче або надішли /menu.'\n    },\n\n    en: {\n        btn_calc:  '🧮 Calculator',\n        btn_rates: '💱 Exchange rates',\n        btn_about: 'ℹ️ About',\n        btn_back:  '⬅️ Back',\n\n        menu_title: 'Main menu. Pick an option:',\n\n        about: 'ℹ️ Test bot built on RedBot (Node-RED).\\nDoes: a calculator and NBU exchange rates.\\n/menu returns here at any time.',\n\n        calc_title:      '🧮 Calculator.',\n        calc_hint:       'Send an expression on one line, e.g.: 12 + 7\\nOperators: + − × ÷ (also * and /)',\n        calc_empty:      'Empty message.',\n        calc_too_long:   'Expression too long ({len} characters, limit {max}).',\n        calc_no_operator:'No operator found in \"{expr}\".',\n        calc_not_number: '\"{bad}\" is not a number.',\n        calc_one_op:     'I can only compute one operation at a time.',\n        calc_div_zero:   'Division by zero is not allowed.',\n        calc_overflow:   'The result is outside the range I can compute.',\n        calc_result:     '🧮 {a} {op} {b} = {r}\\n\\nAnother one? Just send it.',\n\n        rates_ok:    '💱 NBU rates for {date}\\n\\n🇺🇸 USD — {usd} UAH\\n🇪🇺 EUR — {eur} UAH',\n        rates_error: 'Could not fetch the rates, please try again later.',\n\n        fallback: 'I did not understand \"{got}\".\\nPick an option below or send /menu.'\n    }\n});\n\nnode.log(JSON.stringify({\n    ts: new Date().toISOString(), chatId: null,\n    step: 'config:loaded',\n    detail: 'langs=' + Object.keys(flow.get('i18n')).join(',')\n}));\n",
+        "finalize": "",
+        "libs": [],
+        "x": 2710,
+        "y": 340,
+        "wires": []
+    }
+]
